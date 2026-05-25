@@ -6,6 +6,7 @@ import by.presassistant.application.port.in.*;
 import by.presassistant.application.port.out.NotificationPort;
 import by.presassistant.domain.exception.LectureNotFoundException;
 import by.presassistant.domain.exception.QuestionLimitExceededException;
+import by.presassistant.domain.model.LectureSession;
 import by.presassistant.application.service.StudentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,7 @@ public class LecturerBot implements SpringLongPollingBot, LongPollingUpdateConsu
 
     private final TelegramClient telegramClient;
     private final StudentService studentService;
+    private final GetLectureUseCase getLecture;
     private final NotificationPort notificationPort;
     private final String botToken;
 
@@ -41,10 +43,12 @@ public class LecturerBot implements SpringLongPollingBot, LongPollingUpdateConsu
 
     public LecturerBot(@Value("${telegram.bot.token}") String botToken,
                        StudentService studentService,
+                       GetLectureUseCase getLecture,
                        NotificationPort notificationPort) {
         this.telegramClient = new OkHttpTelegramClient(botToken);
         this.botToken = botToken;
         this.studentService = studentService;
+        this.getLecture = getLecture;
         this.notificationPort = notificationPort;
     }
 
@@ -134,22 +138,18 @@ public class LecturerBot implements SpringLongPollingBot, LongPollingUpdateConsu
     private void handleSlideRequest(long chatId) {
         studentService.execute(chatId).ifPresentOrElse(
                 lectureId -> {
-                    studentService.recordSlideRequest(lectureId, chatId,
-                            getCurrentSlideNumber(lectureId));
-                    studentService.getSlideImageBytes(lectureId, getCurrentSlideNumber(lectureId))
+                    LectureSession lecture = getLecture.execute(lectureId);
+                    int slideNumber = lecture.getCurrentSlide();
+                    studentService.recordSlideRequest(lectureId, chatId, slideNumber);
+                    studentService.getSlideImageBytes(lectureId, slideNumber)
                             .ifPresentOrElse(
-                                    bytes -> notificationPort.sendSlideImage(chatId, bytes,
-                                            getCurrentSlideNumber(lectureId)),
+                                    bytes -> notificationPort.sendSlideImage(chatId, bytes, slideNumber),
                                     () -> notificationPort.sendMessage(chatId,
-                                            "📊 Текущий слайд: " + getCurrentSlideNumber(lectureId))
+                                            "📊 Текущий слайд: " + slideNumber)
                             );
                 },
                 () -> notificationPort.sendMessage(chatId,
                         "Вы не подключены к лекции.\nОтсканируйте QR-код или используйте /join <название>."));
-    }
-
-    private int getCurrentSlideNumber(UUID lectureId) {
-        return 1; // resolved by LectureRepository in a real call — placeholder here
     }
 
     private void handleQuestion(long chatId, String firstName, String username, String text) {

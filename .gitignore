@@ -1,0 +1,5 @@
+build/
+.gradle/
+pres-assistant-addin/node_modules/
+pres-assistant-addin/dist/
+*.class

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ассистент лектора</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <link rel="stylesheet" href="taskpane.css" />
+</head>
+<body>
+
+<!-- ── Экран настройки ── -->
+<div id="screen-setup" class="screen">
+    <h2>Ассистент лектора</h2>
+
+    <div class="field">
+        <label>Название лекции</label>
+        <input id="input-title" type="text" placeholder="например: Лекция 1 — Введение" />
+    </div>
+
+    <button id="btn-start" class="btn-primary">Начать лекцию</button>
+    <div id="setup-error" class="error hidden"></div>
+</div>
+
+<!-- ── Экран активной лекции ── -->
+<div id="screen-active" class="screen hidden">
+
+    <div class="status-bar">
+        <span id="lecture-title">—</span>
+        <button id="btn-disconnect" class="btn-small btn-danger">✕ Завершить</button>
+    </div>
+
+    <div class="qr-section">
+        <div class="qr-label">Студентам — отсканируйте QR-код:</div>
+        <div id="qr-code"></div>
+        <div id="qr-link" class="qr-link"></div>
+    </div>
+
+    <hr />
+
+    <div class="slide-info">
+        <div class="slide-number">Слайд <span id="current-slide">—</span></div>
+        <div id="sync-status" class="sync-status">—</div>
+    </div>
+
+    <div class="toggle-row">
+        <label class="toggle-label">
+            <input id="toggle-auto" type="checkbox" checked />
+            Отправлять слайд автоматически
+        </label>
+    </div>
+
+    <button id="btn-send-slide" class="btn-primary hidden">
+        📤 Отправить слайд студентам
+    </button>
+
+    <hr />
+
+    <div class="message-row">
+        <input id="input-message" type="text" placeholder="Сообщение студентам..." />
+        <button id="btn-broadcast" class="btn-send">&#x27A4;</button>
+    </div>
+
+    <hr />
+
+    <div class="tabs">
+        <button class="tab active" data-tab="questions">Вопросы</button>
+        <button class="tab" data-tab="students">
+            Студенты <span id="students-count" class="count-badge hidden"></span>
+        </button>
+        <button class="tab" data-tab="analytics">Аналитика</button>
+    </div>
+
+    <div id="tab-questions" class="tab-content">
+        <div class="tab-header">
+            <span>Вопросы студентов</span>
+            <button id="btn-refresh" class="btn-small">↻</button>
+        </div>
+        <div id="questions-list" class="list-container">
+            <div class="empty">Вопросов пока нет</div>
+        </div>
+    </div>
+
+    <div id="tab-students" class="tab-content hidden">
+        <div class="tab-header">
+            <span>Подключённые студенты</span>
+            <button id="btn-refresh-students" class="btn-small">↻</button>
+        </div>
+        <div id="students-list" class="list-container">
+            <div class="empty">Студентов пока нет</div>
+        </div>
+    </div>
+
+    <div id="tab-analytics" class="tab-content hidden">
+        <div class="tab-header">
+            <span>Запросы слайдов</span>
+            <button id="btn-refresh-analytics" class="btn-small">↻</button>
+        </div>
+        <div id="analytics-list" class="list-container">
+            <div class="empty">Студенты ещё не запрашивали слайды</div>
+        </div>
+    </div>
+
+</div>
+
+<script src="taskpane.js"></script>
+</body>
+</html>

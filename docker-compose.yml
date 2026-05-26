@@ -1,0 +1,37 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: pres_assistant_v2_db
+    environment:
+      POSTGRES_DB: pres_assistant_v2
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: pres_assistant_v2_app
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pres_assistant_v2
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - postgres
+
+  addin:
+    build: ./pres-assistant-addin
+    container_name: pres_assistant_v2_addin
+    ports:
+      - "3000:3000"
+    volumes:
+      # Монтируем сертификаты с хоста чтобы PowerPoint доверял HTTPS
+      - ${USERPROFILE}/.office-addin-dev-certs:/root/.office-addin-dev-certs:ro
+
+volumes:
+  postgres_data:
